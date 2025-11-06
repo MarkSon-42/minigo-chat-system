@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket 테스트 클라이언트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 2px solid #333;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #messages {
+            border: 1px solid #ccc;
+            height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+        }
+        .message {
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .join {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        .leave {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .chat {
+            background-color: #fff;
+        }
+        .system {
+            background-color: #fff3e0;
+            color: #e65100;
+            font-style: italic;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .connected {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        .disconnected {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 WebSocket Backend 테스트</h1>
+        
+        <div id="status" class="status disconnected">❌ 연결 안됨</div>
+        
+        <div>
+            <h3>연결 정보</h3>
+            <input id="username" placeholder="사용자 이름" value="tester1">
+            <input id="room" placeholder="방 이름" value="lobby">
+            <button id="connectBtn" onclick="connect()">연결</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>연결 끊기</button>
+        </div>
+        
+        <div>
+            <h3>메시지 전송</h3>
+            <input id="message" placeholder="메시지 입력" style="width: 400px;" disabled>
+            <button id="sendBtn" onclick="sendMessage()" disabled>전송</button>
+        </div>
+        
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        const statusDiv = document.getElementById('status');
+        const messagesDiv = document.getElementById('messages');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('message');
+
+        function connect() {
+            const username = document.getElementById('username').value.trim();
+            const room = document.getElementById('room').value.trim();
+            
+            if (!username || !room) {
+                alert('사용자 이름과 방 이름을 입력하세요!');
+                return;
+            }
+
+            // WebSocket 연결 생성
+            const wsUrl = `ws://localhost:8080/ws?username=${encodeURIComponent(username)}&room=${encodeURIComponent(room)}`;
+            ws = new WebSocket(wsUrl);
+            
+            // 연결 성공 이벤트
+            ws.onopen = () => {
+                statusDiv.className = 'status connected';
+                statusDiv.textContent = '✅ 연결됨: ' + username + ' @ ' + room;
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                sendBtn.disabled = false;
+                messageInput.disabled = false;
+                addSystemMessage('서버에 연결되었습니다.');
+            };
+            
+            // 메시지 수신 이벤트
+            ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    displayMessage(msg);
+                } catch (e) {
+                    addSystemMessage('파싱 에러: ' + event.data);
+                }
+            };
+            
+            // 에러 이벤트
+            ws.onerror = (error) => {
+                addSystemMessage('❌ WebSocket 에러 발생');
+                console.error('WebSocket error:', error);
+            };
+            
+            // 연결 종료 이벤트
+            ws.onclose = (event) => {
+                statusDiv.className = 'status disconnected';
+                statusDiv.textContent = '❌ 연결 끊김';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                sendBtn.disabled = true;
+                messageInput.disabled = true;
+                addSystemMessage(`연결이 종료되었습니다. (코드: ${event.code})`);
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        function sendMessage() {
+            const content = messageInput.value.trim();
+            if (!content) return;
+
+            const msg = {
+                type: 'message',
+                content: content
+            };
+
+            ws.send(JSON.stringify(msg));
+            messageInput.value = '';
+        }
+
+        function displayMessage(msg) {
+            const div = document.createElement('div');
+            div.className = 'message ' + msg.type;
+            
+            const time = new Date(msg.timestamp).toLocaleTimeString('ko-KR');
+            
+            switch(msg.type) {
+                case 'join':
+                    div.innerHTML = `<strong>[입장]</strong> ${msg.username} | ${time}`;
+                    break;
+                case 'leave':
+                    div.innerHTML = `<strong>[퇴장]</strong> ${msg.username} | ${time}`;
+                    break;
+                case 'message':
+                    div.innerHTML = `<strong>${msg.username}:</strong> ${msg.content} | ${time}`;
+                    break;
+                default:
+                    div.innerHTML = `${JSON.stringify(msg)}`;
+            }
+            
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addSystemMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'message system';
+            div.textContent = '[시스템] ' + text;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Enter 키로 메시지 전송
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !sendBtn.disabled) {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
