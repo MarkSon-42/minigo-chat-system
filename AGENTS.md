@@ -107,6 +107,14 @@ frontend/ - Vanilla JavaScript client
 - ✅ Check and log WebSocket errors properly
 - ✅ Use channels for communication: `ch := make(chan Type, bufferSize)`
 
+## Git Commit Convention
+- Follow Conventional Commits format: `<type>(<scope>): <subject>`
+- Types: feat, fix, docs, style, refactor, test, chore, perf
+- Scopes: backend, proxy, frontend, api, filter, docs, ci
+- **IMPORTANT: DO NOT include AI-generated markers (e.g., "Generated with Claude")**
+- Keep commit messages clean and professional
+- Example: `feat(proxy): implement message filtering engine`
+
 ## Reference Documentation
 - For complex Gorilla WebSocket usage patterns, see: https://github.com/gorilla/websocket/tree/main/examples
 - For Go concurrency patterns, refer to: https://go.dev/blog/pipelines
