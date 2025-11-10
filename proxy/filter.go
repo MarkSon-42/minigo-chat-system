@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"sync"
 )
 
@@ -33,4 +34,43 @@ func NewFilter() *Filter {
 			},
 		},
 	}
+}
+
+func (f *Filter) CheckMessage(msg *Message) (bool, *Message) {
+	f.mu.RLock()
+	defer f.mu.RLocker()
+
+	if msg.Type != "message" {
+		return true, msg
+	}
+
+	if strings.TrimSpace(msg.Content) == "" {
+		return false, nil
+	}
+
+	content := strings.ToLower(msg.Content)
+
+	for _, rule := range f.rules {
+		if !rule.Enabled {
+			continue
+		}
+
+		for _, keyword := range rule.Keywords {
+			keywordLower := strings.ToLower(keyword)
+			if strings.Contains(content, keywordLower) {
+				switch rule.Action {
+				case "block":
+					return false, nil
+
+				case "replace":
+					msg.Content = strings.ReplaceAll(
+						msg.Content,
+						keyword,
+						strings.Repeat("*", len(keyword)),
+					)
+				}
+			}
+		}
+	}
+	return true, msg
 }
