@@ -74,3 +74,19 @@ func (f *Filter) CheckMessage(msg *Message) (bool, *Message) {
 	}
 	return true, msg
 }
+
+func (f *Filter) AddRule(rule FilterRule) {
+	f.mu.Lock() // 쓰기 락 (배타적 접근)
+	defer f.mu.Unlock()
+
+	// 새 ID 자동 할당 (기존 최대 ID + 1)
+	maxID := 0
+	for _, r := range f.rules {
+		if r.ID > maxID {
+			maxID = r.ID
+		}
+	}
+	rule.ID = maxID + 1
+
+	f.rules = append(f.rules, rule)
+}
