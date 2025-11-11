@@ -3,6 +3,8 @@ package main
 import (
 	"strings"
 	"sync"
+
+	"golang.org/x/tools/go/analysis/passes/defers"
 )
 
 type FilterRule struct {
@@ -115,6 +117,15 @@ func (f *Filter) UpdateRule(id int, new Rule FilterRule) bool {
 		}
 	}
 	return false
+}
+
+func (f *Filter) GetRules() []FilterRule {
+	f.mu.RLock()
+	defer f.mu.RUnlock()
+
+	rules := make([]FilterRule, len(f.rules))
+	copy(rules, f.rules)
+	return rules
 }
 
 
