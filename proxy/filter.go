@@ -11,7 +11,6 @@ type FilterRule struct {
 	Action   string   `json:"action"`
 	Enabled  bool     `json:"enabled"`
 }
-
 type Filter struct {
 	mu    sync.RWMutex
 	rules []FilterRule
@@ -38,7 +37,7 @@ func NewFilter() *Filter {
 
 func (f *Filter) CheckMessage(msg *Message) (bool, *Message) {
 	f.mu.RLock()
-	defer f.mu.RLocker()
+	defer f.mu.RUnlock()
 
 	if msg.Type != "message" {
 		return true, msg
@@ -90,3 +89,32 @@ func (f *Filter) AddRule(rule FilterRule) {
 
 	f.rules = append(f.rules, rule)
 }
+
+func (f *Filter) RemoveRule(id int) bool {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	for i, rule := range f.rules {
+		if rule.ID == id {
+			f.rules = append(f.rules[:i], f.rules[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
+func (f *Filter) UpdateRule(id int, new Rule FilterRule) bool {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	for i, rule := range f.rules {
+		if rule.ID == id {
+			newRule.ID = id
+			f.rules[i] = newRule
+			return true
+		}
+	}
+	return false
+}
+
+
