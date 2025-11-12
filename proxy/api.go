@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func (ps *ProxyServer) handleFilterRules(w http.ResponseWriter, r *http.Request) {
@@ -34,12 +35,53 @@ func (ps *ProxyServer) getRules(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[API] Returned %d filter rules", len(rules))
 }
 
-func (ps *ProxyServer) addRule() {
+func (ps *ProxyServer) addRule(w http.ResponseWriter, r *http.Request) {
+	var rule FilterRule
+	if err := json.NewDecoder(r.Body).Decode(&rule); err != nil {
+		log.Printf("[API] Invalid request body: %v", err)
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
 
+	if len(rule.Keywords) == 0 {
+		http.Error(w, "Keywords cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	if rule.Action != "block" && rule.Action != "replace" {
+
+	}
 }
-func (ps *ProxyServer) removeRule() {
 
+func (ps *ProxyServer) removeRule(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "Missing 'id' parameter", http.StatusBadRequest)
+		return
+	}
 }
-func (ps *ProxyServer) updateRule() {
 
+func (ps *ProxyServer) updateRule(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "Missing 'id' parameter", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid 'id' parameter", http.StatusBadRequest)
+		return
+	}
+
+	var newRule FilterRule
+	if err := json.NewDecoder(r.Body).Decode(&newRule); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if len(newRule.Keywords) == 0 {
+		http.Error(w, "Keywords cannot be empty", http.StatusBadRequest)
+		return
+	}
 }
