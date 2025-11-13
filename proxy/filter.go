@@ -3,15 +3,14 @@ package main
 import (
 	"strings"
 	"sync"
-
-	"golang.org/x/tools/go/analysis/passes/defers"
 )
 
 type FilterRule struct {
-	ID       int      `json:"id"` // 규칙 고유 번호
-	Keywords []string `json:"keywords"`
-	Action   string   `json:"action"`
-	Enabled  bool     `json:"enabled"`
+	ID          int      `json:"id"` // 규칙 고유 번호
+	Keywords    []string `json:"keywords"`
+	Action      string   `json:"action"`
+	Enabled     bool     `json:"enabled"`
+	Replacement string   `json:"replacement"`
 }
 type Filter struct {
 	mu    sync.RWMutex
@@ -88,8 +87,8 @@ func (f *Filter) AddRule(rule FilterRule) {
 		}
 	}
 	rule.ID = maxID + 1
-
 	f.rules = append(f.rules, rule)
+	return rule.ID
 }
 
 func (f *Filter) RemoveRule(id int) bool {
@@ -105,7 +104,7 @@ func (f *Filter) RemoveRule(id int) bool {
 	return false
 }
 
-func (f *Filter) UpdateRule(id int, new Rule FilterRule) bool {
+func (f *Filter) UpdateRule(id int, newRule FilterRule) bool {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -127,5 +126,3 @@ func (f *Filter) GetRules() []FilterRule {
 	copy(rules, f.rules)
 	return rules
 }
-
-

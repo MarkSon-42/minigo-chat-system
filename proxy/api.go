@@ -49,8 +49,26 @@ func (ps *ProxyServer) addRule(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if rule.Action != "block" && rule.Action != "replace" {
-
+		http.Error(w, "Action must be 'block' or 'replace'", http.StatusBadRequest)
+		return
 	}
+
+	if rule.Action == "replace" && rule.Replacement == "" {
+		http.Error(w, "Replacement text required for 'replace' action", http.StatusBadRequest)
+		return
+	}
+
+	id := ps.filter.AddRule(rule)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "created",
+		"message": "Filter rule added successfully",
+		"id":      id,
+	})
+
+	log.Printf("[API] Added new rule ID=%d: %v", id, rule.Keywords)
 }
 
 func (ps *ProxyServer) removeRule(w http.ResponseWriter, r *http.Request) {
@@ -59,6 +77,25 @@ func (ps *ProxyServer) removeRule(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing 'id' parameter", http.StatusBadRequest)
 		return
 	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid 'id' parameter", http.StatusBadRequest)
+		return
+	}
+
+	if !ps.filter.RemoveRule(id) {
+		http.Error(w, "Rule not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"status":  "deleted",
+		"message": "Filter rule removed successfully",
+	})
+
+	log.Printf("[API] Removed rule ID=%d", id)
 }
 
 func (ps *ProxyServer) updateRule(w http.ResponseWriter, r *http.Request) {
