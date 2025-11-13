@@ -84,4 +84,22 @@ func (ps *ProxyServer) updateRule(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Keywords cannot be empty", http.StatusBadRequest)
 		return
 	}
+
+	if newRule.Action != "block" && newRule.Action != "replace" {
+		http.Error(w, "Rule not found", http.StatusNotFound)
+		return
+	}
+
+	if !ps.filter.UpdateRule(id, newRule) {
+		http.Error(w, "Rule not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"status":  "updated",
+		"message": "Filter rule updated successfully",
+	})
+
+	log.Printf("[API] Updated rule ID=%d", id)
 }
