@@ -59,11 +59,21 @@ func (s *Storage) LogMessage(msg *Message) error {
 }
 
 func (s *Storage) SetEnabled(enabled bool) {
-
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.enabled = enabled
+	log.Printf("[Storage] Enabled: %v", enabled)
 }
 
 func (s *Storage) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
+	if s.file != nil {
+		log.Printf("[Storage] Closing %s", s.filepath)
+		return s.file.Close()
+	}
+	return nil
 }
 
 func (s *Storage) Sync() error {
