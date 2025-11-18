@@ -14,8 +14,8 @@ import (
 type Proxy struct {
 	clientConn  *websocket.Conn
 	backendConn *websocket.Conn
-	filter      *Filter
-	queue       *MessageQueue
+	filter      *Filter       // filter.go의 Filter 공유
+	queue       *MessageQueue // queue.go
 }
 
 // NewProxy generator - 그럼 이건 생성자 함수? 파라미터로 클라이언트연결, 필터, 큐, 사용자이름, 채팅방이름.. 다시 () 에는 반환값.
@@ -50,7 +50,7 @@ func (p *Proxy) Start() {
 	go p.clientToBackend(done)
 	go p.backendToClient(done)
 
-	<-done
+	<-done // blocking .. 채널에서 값을 받을 때까지 대기
 	p.Close()
 }
 
@@ -110,6 +110,20 @@ func (p *Proxy) backendToClient(done chan struct{}) {
 		p.backendConn.SetReadDeadline(time.Now().Add(60 * time.Second))
 		return nil
 	})
+
+	for {
+		_, data, err := p.backendConn.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("[Proxy] Backend read error: %v", err)
+			}
+			return
+		}
+		if err := p.clientConn.WriteMessage(websocket.TextMessage, data); err != nil {
+			log.Printf("[Proxy] Failed to send to client %v", err)
+			return
+		}
+	}
 }
 
 func (p *Proxy) Close() {

@@ -50,7 +50,13 @@ func (ps *ProxyServer) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("[Proxy] New client connected: %s (room: %s)", username, room)
 
-	defer clientConn.Close()
+	proxy, err := NewProxy(clientConn, ps.filter, ps.queue, username, room)
+	if err != nil {
+		log.Printf("[Proxy] Failed to create proxy %v", err)
+		clientConn.Close()
+		return
+	}
+	proxy.Start()
 }
 
 func (ps *ProxyServer) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -75,6 +81,7 @@ func main() {
 	http.HandleFunc("/ws", proxy.handleWebSocket)
 	http.HandleFunc("/health", proxy.handleHealth)
 	http.HandleFunc("/stats", proxy.handleStats)
+	http.HandleFunc("/filter/rules", proxy.handleFilterRules)
 
 	log.Printf("[Proxy] Starting server on %s", *listenAddr)
 	log.Printf("[Proxy] Endpoints:")
