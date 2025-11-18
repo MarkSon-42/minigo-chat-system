@@ -3,6 +3,8 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
 	"net/url"
 
 	"github.com/gorilla/websocket"
@@ -15,21 +17,75 @@ type Proxy struct {
 	queue       *MessageQueue
 }
 
-// NewProxy generator
+// NewProxy generator - 그럼 이건 생성자 함수? 파라미터로 클라이언트연결, 필터, 큐, 사용자이름, 채팅방이름.. 다시 () 에는 반환값.
 
-func NewProxy(clientConn *websocket.Conn, filter *Filter, queue *MessageQueue, username, room string) {
-	backendURL, err := url.Parse(*backendAddr)
+func NewProxy(clientConn *websocket.Conn, filter *Filter, queue *MessageQueue, username, room string) (*Proxy, error) {
+	backendURL, err := url.Parse(*backendAddr) // Parse() : 문자열을 URL 구조체로 변환
 	if err != nil {
 		return nil, err
 	}
+
+	query := backendURL.Query()
+	query.Set("username", username)
+	query.Set("room", room)
+	backendURL.RawQuery = query.Encode()
+
+	backendConn, _, err := websocket.DefaultDialer.Dial(backendURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Proxy{
+		clientConn:  clientConn,
+		backendConn: backendConn,
+		filter:      filter,
+		queue:       queue,
+	}, nil
 }
 
 func (p *Proxy) Start() {
+	done := make(chan struct{})
 
+	go p.clientToBackend(done)
+	go p.backendToClient(done)
+
+	<-done
+	p.Close()
 }
 
 func (p *Proxy) clientToBackend(done chan struct{}) {
+	defer close(done)
 
+	for {
+		_, data, err := p.clientConn.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("[Proxy] Client read error: %v", err)
+			}
+			return
+		}
+
+		var msg Message
+		if err := json.Unmarshal(data, &msg); err != nil {
+			log.Printf("[Proxy] Invalid message format: %v", err)
+			continue
+		}
+
+		allowed, filteredMsg := p.filter.CheckMessage(&msg)
+		if !allowed {
+			log.Printf("[Proxy] Message blocked from %s: %s", msg.Username, msg.Content)
+			continue
+		}
+		if filteredMsg != nil {
+			msg = *filteredMsg
+		}
+
+		if !p.queue.Enqueue(&msg) {
+			log.Printf("[Proxy] Queue full, message dropped from %s", msg.Username)
+			continue
+		}
+
+	}
 }
 
 func (p *Proxy) backendToClient(done chan struct{}) {

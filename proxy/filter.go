@@ -75,7 +75,7 @@ func (f *Filter) CheckMessage(msg *Message) (bool, *Message) {
 	return true, msg
 }
 
-func (f *Filter) AddRule(rule FilterRule) {
+func (f *Filter) AddRule(rule FilterRule) int {
 	f.mu.Lock() // 쓰기 락 (배타적 접근)
 	defer f.mu.Unlock()
 
@@ -88,6 +88,7 @@ func (f *Filter) AddRule(rule FilterRule) {
 	}
 	rule.ID = maxID + 1
 	f.rules = append(f.rules, rule)
+	return rule.ID
 }
 
 func (f *Filter) RemoveRule(id int) bool {
