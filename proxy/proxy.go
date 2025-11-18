@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/url"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -85,13 +86,37 @@ func (p *Proxy) clientToBackend(done chan struct{}) {
 			continue
 		}
 
+		filteredData, err := json.Marshal(msg)
+		if err != nil {
+			log.Printf("[Proxy] Failed to marshal message: %v", err)
+			continue
+		}
+
+		if err := p.backendConn.WriteMessage(websocket.TextMessage, filteredData); err != nil {
+			log.Printf("[Proxy] Failed to send to backend: %v", err)
+			return
+		}
+
 	}
 }
 
 func (p *Proxy) backendToClient(done chan struct{}) {
+	defer close(done)
 
+	p.backendConn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	p.clientConn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+
+	p.backendConn.SetPongHandler(func(string) error {
+		p.backendConn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		return nil
+	})
 }
 
 func (p *Proxy) Close() {
-
+	if p.clientConn != nil {
+		p.clientConn.Close()
+	}
+	if p.backendConn != nil {
+		p.backendConn.Close()
+	}
 }
