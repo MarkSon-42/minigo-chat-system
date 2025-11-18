@@ -88,7 +88,6 @@ func (f *Filter) AddRule(rule FilterRule) {
 	}
 	rule.ID = maxID + 1
 	f.rules = append(f.rules, rule)
-	return rule.ID
 }
 
 func (f *Filter) RemoveRule(id int) bool {
