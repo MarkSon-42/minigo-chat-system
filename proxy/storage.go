@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 type Storage struct {
@@ -27,4 +29,43 @@ func NewStorage(filepath string) (*Storage, error) {
 		filepath: filepath,
 		enabled:  true,
 	}, nil
+}
+
+func (s *Storage) LogMessage(msg *Message) error {
+	if !s.enabled {
+		return nil
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if msg.Timestamp.IsZero() {
+		msg.Timestamp = time.Now()
+	}
+
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+
+	_, err = s.file.Write(data)
+	if err != nil {
+		log.Printf("[Storage] Write failed: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *Storage) SetEnabled(enabled bool) {
+
+}
+
+func (s *Storage) Close() error {
+
+}
+
+func (s *Storage) Sync() error {
+
 }
