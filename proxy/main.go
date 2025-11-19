@@ -22,14 +22,22 @@ var (
 )
 
 type ProxyServer struct {
-	filter *Filter
-	queue  *MessageQueue
+	filter  *Filter
+	queue   *MessageQueue
+	storage *Storage
 }
 
 func NewProxyServer() *ProxyServer {
+	storage, err := NewStorage("logs/messages.jsonl")
+	if err != nil {
+		log.Printf("[Warning] Failed to create storageL %v", err)
+		storage = nil
+	}
+
 	return &ProxyServer{
-		filter: NewFilter(),
-		queue:  NewMessageQueue(1000),
+		filter:  NewFilter(),
+		queue:   NewMessageQueue(1000),
+		storage: storage,
 	}
 }
 
@@ -88,6 +96,7 @@ func main() {
 	log.Println("  - WebSocket: /ws?username=<name>&room=<room>")
 	log.Println("  - Health: /health")
 	log.Println("  - Stats: /stats")
+	log.Println("  - Filter Rules: /filter/rules")
 
 	if err := http.ListenAndServe(*listenAddr, nil); err != nil {
 		log.Fatalf("[Proxy] Server failed: %v", err)
