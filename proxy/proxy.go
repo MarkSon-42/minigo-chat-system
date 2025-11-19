@@ -16,11 +16,12 @@ type Proxy struct {
 	backendConn *websocket.Conn
 	filter      *Filter       // filter.go의 Filter 공유
 	queue       *MessageQueue // queue.go
+	storage     *Storage
 }
 
 // NewProxy generator - 그럼 이건 생성자 함수? 파라미터로 클라이언트연결, 필터, 큐, 사용자이름, 채팅방이름.. 다시 () 에는 반환값.
 
-func NewProxy(clientConn *websocket.Conn, filter *Filter, queue *MessageQueue, username, room string) (*Proxy, error) {
+func NewProxy(clientConn *websocket.Conn, filter *Filter, queue *MessageQueue, storage *Storage, username, room string) (*Proxy, error) {
 	backendURL, err := url.Parse(*backendAddr) // Parse() : 문자열을 URL 구조체로 변환
 	if err != nil {
 		return nil, err
@@ -41,6 +42,7 @@ func NewProxy(clientConn *websocket.Conn, filter *Filter, queue *MessageQueue, u
 		backendConn: backendConn,
 		filter:      filter,
 		queue:       queue,
+		storage:     storage,
 	}, nil
 }
 
@@ -84,6 +86,12 @@ func (p *Proxy) clientToBackend(done chan struct{}) {
 		if !p.queue.Enqueue(&msg) {
 			log.Printf("[Proxy] Queue full, message dropped from %s", msg.Username)
 			continue
+		}
+
+		if p.storage != nil {
+			if err := p.storage.LogMessage(&msg); err != nil {
+				log.Printf("[Proxy] Failed to log message: %v", err)
+			}
 		}
 
 		filteredData, err := json.Marshal(msg)

@@ -58,7 +58,7 @@ func (ps *ProxyServer) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("[Proxy] New client connected: %s (room: %s)", username, room)
 
-	proxy, err := NewProxy(clientConn, ps.filter, ps.queue, username, room)
+	proxy, err := NewProxy(clientConn, ps.filter, ps.queue, ps.storage, username, room)
 	if err != nil {
 		log.Printf("[Proxy] Failed to create proxy %v", err)
 		clientConn.Close()
@@ -85,6 +85,10 @@ func main() {
 	log.Printf("Backend address: %s", *backendAddr)
 
 	proxy := NewProxyServer()
+
+	if proxy.storage != nil {
+		defer proxy.storage.Close()
+	}
 
 	http.HandleFunc("/ws", proxy.handleWebSocket)
 	http.HandleFunc("/health", proxy.handleHealth)
