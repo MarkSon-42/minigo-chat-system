@@ -78,7 +78,7 @@ func (s *Storage) Close() error {
 
 func (s *Storage) Sync() error {
 	s.mu.Lock()
-	defer s.mu.Lock()
+	defer s.mu.Unlock()
 
 	if s.file != nil {
 		return s.file.Sync()

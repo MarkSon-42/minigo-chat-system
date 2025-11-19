@@ -30,7 +30,7 @@ type ProxyServer struct {
 func NewProxyServer() *ProxyServer {
 	storage, err := NewStorage("logs/messages.jsonl")
 	if err != nil {
-		log.Printf("[Warning] Failed to create storageL %v", err)
+		log.Printf("[Warning] Failed to create storage %v", err)
 		storage = nil
 	}
 
