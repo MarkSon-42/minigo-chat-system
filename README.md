@@ -1,5 +1,3 @@
-# minigo-chat-system 
-
 ## [deepwiki docs] (https://deepwiki.com/MarkSon-42/minigo-chat-system)
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://golang.org/)
@@ -212,16 +210,6 @@ Uses buffered Go channels for asynchronous message processing:
   - Writers block all readers during updates (`Lock()`)
 - **Storage**: Uses `sync.Mutex` for file operations
   - Critical section protection prevents deadlocks
-
-## 🛠️ Technology Stack
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **WebSocket Library** | gorilla/websocket | Bidirectional real-time communication |
-| **Concurrency** | Go goroutines, channels | Concurrent message handling |
-| **Synchronization** | sync.Mutex, sync.RWMutex | Thread-safe shared state |
-| **Data Serialization** | JSON encoding/decoding | Message format |
-| **Storage** | JSON Lines (.jsonl) | Message audit trail |
 
 ## 📊 Core Data Structures
 
@@ -518,15 +506,6 @@ go test -race ./...
 - **스토리지**: 파일 작업을 위해 `sync.Mutex` 사용
   - 임계 영역 보호로 데드락 방지
 
-## 🛠️ 기술 스택
-
-| 구성 요소 | 기술 | 목적 |
-|-----------|------|------|
-| **WebSocket 라이브러리** | gorilla/websocket | 양방향 실시간 통신 |
-| **동시성** | Go 고루틴, 채널 | 동시 메시지 처리 |
-| **동기화** | sync.Mutex, sync.RWMutex | 스레드 안전 공유 상태 |
-| **데이터 직렬화** | JSON 인코딩/디코딩 | 메시지 형식 |
-| **스토리지** | JSON Lines (.jsonl) | 메시지 감사 추적 |
 
 ## 📊 핵심 데이터 구조
 
