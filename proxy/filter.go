@@ -29,7 +29,7 @@ func NewFilter() *Filter {
 			{
 				ID:       2,
 				Keywords: []string{"password", "비밀번호"},
-				Action:   "replace",
+				Action:   "block",
 				Enabled:  true,
 			},
 		},
