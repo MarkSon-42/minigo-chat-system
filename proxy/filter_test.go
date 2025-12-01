@@ -58,3 +58,28 @@ func TestCheckMessage_EmptyContent(t *testing.T) {
 		})
 	}
 }
+
+func TestAddRule(t *testing.T) {
+	filter := NewFilter()
+
+	initialRules := filter.GetRules()
+	initialCount := len(initialRules)
+
+	newRule := FilterRule{
+		Keywords:    []string{"test", "example"},
+		Action:      "block",
+		Enabled:     true,
+		Replacement: "",
+	}
+
+	id := filter.AddRule(newRule)
+	if id <= 0 {
+		t.Error("Expected positive ruule ID")
+	}
+
+	rules := filter.GetRules()
+	if len(rules) != initialCount+1 {
+		t.Errorf("Expected %d rules, got %d", initialCount+1, len(rules))
+	}
+
+}
