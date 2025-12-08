@@ -20,5 +20,26 @@ func TestEnqueueDequeue(t *testing.T) {  // testing.T는 Go의 테스트 프레�
 		t.Fatal("Enqueue failed on empty queue")
 	}
 
+	// test dequeue
+	retrieved, ok := queue.Dequeue()
+	if !ok {
+		t.Fatal("Dequeue failed on non-empty queue")
+	}
+	if retrieved.Content != "Hello" {
+		t.Errorf("Expected 'Hello', got '%s'", retrieved.Content)
+	}
+
+}
+
+func TestQueueFull(t *testing.T) {
+	queue := NewMessageQueue(2)
+
+	msg1 := &Message{Content: "First"}
+	msg2 := &Message{Content: "Second"}
+	msg3 := &Message{Content: "Third"}
+
+	if !queue.Enqueue(msg1) {
+		t.Fatal("Frist enqueue failed")
+	}
 	
 }
