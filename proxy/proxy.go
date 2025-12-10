@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -48,16 +49,22 @@ func NewProxy(clientConn *websocket.Conn, filter *Filter, queue *MessageQueue, s
 
 func (p *Proxy) Start() {
 	done := make(chan struct{})
+	var closeOnce sync.Once
+	closeDone := func() {
+		closeOnce.Do(func() {
+			close(done)
+		})
+	}
 
-	go p.clientToBackend(done)
-	go p.backendToClient(done)
+	go p.clientToBackend(closeDone)
+	go p.backendToClient(closeDone)
 
 	<-done // blocking .. 채널에서 값을 받을 때까지 대기
 	p.Close()
 }
 
-func (p *Proxy) clientToBackend(done chan struct{}) {
-	defer close(done)
+func (p *Proxy) clientToBackend(closeDone func()) {
+	defer closeDone()
 
 	for {
 		_, data, err := p.clientConn.ReadMessage()
@@ -108,8 +115,8 @@ func (p *Proxy) clientToBackend(done chan struct{}) {
 	}
 }
 
-func (p *Proxy) backendToClient(done chan struct{}) {
-	defer close(done)
+func (p *Proxy) backendToClient(closeDone func()) {
+	defer closeDone()
 
 	p.backendConn.SetReadDeadline(time.Now().Add(60 * time.Second))
 	p.clientConn.SetWriteDeadline(time.Now().Add(10 * time.Second))
@@ -128,7 +135,7 @@ func (p *Proxy) backendToClient(done chan struct{}) {
 			return
 		}
 		if err := p.clientConn.WriteMessage(websocket.TextMessage, data); err != nil {
-			log.Printf("[Proxy] Failed to send to client %v", err)
+			log.Printf("[Proxy] Failed to send to client: %v", err)
 			return
 		}
 	}

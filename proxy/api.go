@@ -62,11 +62,13 @@ func (ps *ProxyServer) addRule(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	if err := json.NewEncoder(w).Encode(map[string]interface{}{
 		"status":  "created",
 		"message": "Filter rule added successfully",
 		"id":      id,
-	})
+	}); err != nil {
+		log.Printf("[API] Failed to encode response: %v", err)
+	}
 
 	log.Printf("[API] Added new rule ID=%d: %v", id, rule.Keywords)
 }
@@ -90,10 +92,12 @@ func (ps *ProxyServer) removeRule(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	if err := json.NewEncoder(w).Encode(map[string]string{
 		"status":  "deleted",
 		"message": "Filter rule removed successfully",
-	})
+	}); err != nil {
+		log.Printf("[API] Failed to encode response: %v", err)
+	}
 
 	log.Printf("[API] Removed rule ID=%d", id)
 }
@@ -123,7 +127,7 @@ func (ps *ProxyServer) updateRule(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if newRule.Action != "block" && newRule.Action != "replace" {
-		http.Error(w, "Rule not found", http.StatusNotFound)
+		http.Error(w, "Action must be 'block' or 'replace'", http.StatusBadRequest)
 		return
 	}
 
@@ -133,10 +137,12 @@ func (ps *ProxyServer) updateRule(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	if err := json.NewEncoder(w).Encode(map[string]string{
 		"status":  "updated",
 		"message": "Filter rule updated successfully",
-	})
+	}); err != nil {
+		log.Printf("[API] Failed to encode response: %v", err)
+	}
 
 	log.Printf("[API] Updated rule ID=%d", id)
 }
