@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"log"
 	"net/http"
@@ -74,7 +75,12 @@ func (ps *ProxyServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 
 func (ps *ProxyServer) handleStats(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"status":"running","queue_size":0}`))
+	if err := json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":     "running",
+		"queue_size": ps.queue.Size(),
+	}); err != nil {
+		log.Printf("[API] Failed to encode stats: %v", err)
+	}
 }
 
 func main() {

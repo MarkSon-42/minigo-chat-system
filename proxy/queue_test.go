@@ -39,9 +39,17 @@ func TestQueueFull(t *testing.T) {
 	msg3 := &Message{Content: "Third"}
 
 	if !queue.Enqueue(msg1) {
-		t.Fatal("Frist enqueue failed")
+		t.Fatal("First enqueue failed")
 	}
 
+	if !queue.Enqueue(msg2) {
+		t.Fatal("Second enqueue failed")
+	}
+
+	// Queue is now full (size=2), third enqueue should fail
+	if queue.Enqueue(msg3) {
+		t.Error("Expected third enqueue to fail on full queue")
+	}
 }
 
 func TestDequeueEmpty(t *testing.T) {
