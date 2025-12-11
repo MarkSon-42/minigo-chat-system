@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"os"
+	"sync"
 	"testing"
 )
 
@@ -135,5 +136,55 @@ func TestMultipleMessages(t *testing.T) {
 
 	if count != 3 {
 		t.Errorf("Expected 3 lines, got %d", count)
+	}
+}
+
+func TestConcurrentWrites(t *testing.T) {
+	filepath := createTempFile(t)
+	defer os.Remove(filepath)
+
+	storage, err := NewStorage(filepath)
+	if err != nil {
+		t.Fatalf("NewStorage failed: %v", err)
+	}
+	defer storage.Close()
+
+	numGoroutines := 10
+	messagePerGoroutine := 100
+	totalMessages := numGoroutines * messagePerGoroutine
+
+	var wg sync.WaitGroup
+	wg.Add(numGoroutines)
+
+	for i := 0; i < numGoroutines; i++ {
+		go func(id int) {
+			defer wg.Done()
+			for j := 0; j < messagePerGoroutine; j++ {
+				msg := &Message{
+					Username: "user",
+					Content:  "Message from goroutine",
+				}
+				storage.LogMessage(msg)
+			}
+		}(i)
+	}
+
+	wg.Wait()
+	storage.Sync()
+
+	file, err := os.Open(filepath)
+	if err != nil {
+		t.Fatalf("Failed to open file: %v", err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	count := 0
+	for scanner.Scan() {
+		count++
+	}
+
+	if count != totalMessages {
+		t.Errorf("Expected %d messages, got %d", totalMessages, count)
 	}
 }
