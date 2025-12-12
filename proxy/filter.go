@@ -63,11 +63,18 @@ func (f *Filter) CheckMessage(msg *Message) (bool, *Message) {
 					return false, nil
 
 				case "replace":
-					msg.Content = strings.ReplaceAll(
-						msg.Content,
-						keyword,
-						strings.Repeat("*", len(keyword)),
-					)
+					// Case-insensitive replacement
+					for {
+						contentLower := strings.ToLower(msg.Content)
+						idx := strings.Index(contentLower, keywordLower)
+						if idx == -1 {
+							break
+						}
+						// Replace the matched portion with asterisks
+						msg.Content = msg.Content[:idx] +
+							strings.Repeat("*", len(keyword)) +
+							msg.Content[idx+len(keyword):]
+					}
 				}
 			}
 		}
