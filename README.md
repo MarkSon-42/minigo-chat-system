@@ -1,4 +1,4 @@
-## [deepwiki docs] (https://deepwiki.com/MarkSon-42/minigo-chat-system)
+## [deepwiki docs](https://deepwiki.com/MarkSon-42/minigo-chat-system)
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://golang.org/)
 [![WebSocket](https://img.shields.io/badge/WebSocket-Gorilla-blue)](https://github.com/gorilla/websocket)
