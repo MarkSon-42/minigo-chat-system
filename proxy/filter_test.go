@@ -21,10 +21,10 @@ func TestCheckMessage_PasswordBlock(t *testing.T) {
 		Content: "My password is 12345",
 	}
 	allowed, result := filter.CheckMessage(msg)
-	if !allowed {
+	if allowed {
 		t.Error("Expected message to be blocked")
 	}
-	if result == nil {
+	if result != nil {
 		t.Fatal("Expected result to be nil when blocked")
 	}
 }
