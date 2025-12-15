@@ -51,16 +51,7 @@ jobs:
         working-directory: ./backend
         run: |
           go mod download
-          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
-
-      - name: Upload backend coverage
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./backend/coverage.out
-          flags: backend
-          name: backend-coverage
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          go test -v -race ./...
 
   # Job 3: 프록시 테스트
   test-proxy:
@@ -81,16 +72,7 @@ jobs:
         working-directory: ./proxy
         run: |
           go mod download
-          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
-
-      - name: Upload proxy coverage
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./proxy/coverage.out
-          flags: proxy
-          name: proxy-coverage
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          go test -v -race ./...
 
   # Job 4: 빌드 검증
   build:
