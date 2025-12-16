@@ -111,7 +111,6 @@ func (p *Proxy) clientToBackend(closeDone func()) {
 			log.Printf("[Proxy] Failed to send to backend: %v", err)
 			return
 		}
-
 	}
 }
 
