@@ -22,3 +22,14 @@ Thumbs.db
 # Dependencies
 vendor/
 error_screenshots/
+
+# Binary executables
+backend/backend
+proxy/proxy
+voice/voice
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
