@@ -1,0 +1,59 @@
+{
+  "name": "websocket-webrtc-patterns",
+  "description": "Real-time communication patterns for WebSocket and WebRTC with production-grade scalability",
+  "version": "1.0.0",
+  "triggers": {
+    "filePatterns": [
+      "**/backend/*.go",
+      "**/proxy/*.go",
+      "**/voice/*.go",
+      "**/frontend/*.js",
+      "**/frontend/*.html"
+    ],
+    "keywords": [
+      "websocket",
+      "webrtc",
+      "gorilla",
+      "pion",
+      "readPump",
+      "writePump",
+      "hub",
+      "broadcast",
+      "relay",
+      "sfu",
+      "peer connection",
+      "upgrader",
+      "ice candidate",
+      "sdp",
+      "offer",
+      "answer",
+      "track",
+      "rtp"
+    ],
+    "commands": [
+      "/websocket",
+      "/webrtc",
+      "/ws-debug",
+      "/sfu"
+    ]
+  },
+  "priority": "high",
+  "autoActivate": true,
+  "contexts": [
+    "backend",
+    "proxy",
+    "voice",
+    "frontend"
+  ],
+  "excludePatterns": [],
+  "dependencies": [
+    "go-development-guidelines"
+  ],
+  "metadata": {
+    "author": "minigo-team",
+    "lastUpdated": "2026-01-08",
+    "tags": ["websocket", "webrtc", "real-time", "networking", "sfu", "scalability"],
+    "language": "ko-en",
+    "scalability": "10000-users"
+  }
+}
