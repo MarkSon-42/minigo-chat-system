@@ -1,0 +1,50 @@
+{
+  "name": "go-development-guidelines",
+  "description": "Go development patterns and best practices for minigo chat system",
+  "version": "1.0.0",
+  "triggers": {
+    "filePatterns": [
+      "**/*.go",
+      "**/go.mod",
+      "**/go.sum"
+    ],
+    "keywords": [
+      "goroutine",
+      "channel",
+      "mutex",
+      "sync.RWMutex",
+      "sync.Mutex",
+      "go mod",
+      "race condition",
+      "deadlock",
+      "defer",
+      "context",
+      "select",
+      "make(chan",
+      "go func",
+      "WaitGroup",
+      "chan<-",
+      "<-chan"
+    ],
+    "commands": [
+      "/go-help",
+      "/concurrency",
+      "/go-patterns"
+    ]
+  },
+  "priority": "high",
+  "autoActivate": true,
+  "contexts": [
+    "backend",
+    "proxy",
+    "voice"
+  ],
+  "excludePatterns": [],
+  "dependencies": [],
+  "metadata": {
+    "author": "minigo-team",
+    "lastUpdated": "2026-01-08",
+    "tags": ["go", "concurrency", "best-practices", "websocket", "testing"],
+    "language": "ko-en"
+  }
+}
