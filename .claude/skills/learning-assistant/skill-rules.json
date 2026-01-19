@@ -1,0 +1,43 @@
+{
+  "name": "learning-assistant",
+  "description": "Bilingual learning support for Go concepts with Korean explanations and analogies",
+  "version": "1.0.0",
+  "triggers": {
+    "keywords": [
+      "왜",
+      "what is",
+      "explain",
+      "어떻게",
+      "이유",
+      "개념",
+      "한글 주석",
+      "korean comment",
+      "analogy",
+      "비유",
+      "설명",
+      "how does",
+      "why does",
+      "what does"
+    ],
+    "commands": [
+      "/explain",
+      "/learn",
+      "/concept",
+      "/한글주석"
+    ]
+  },
+  "priority": "medium",
+  "autoActivate": false,
+  "contexts": [
+    "all"
+  ],
+  "excludePatterns": [],
+  "dependencies": [],
+  "metadata": {
+    "author": "minigo-team",
+    "lastUpdated": "2026-01-08",
+    "tags": ["learning", "education", "korean", "concepts", "beginner-friendly"],
+    "language": "bilingual-ko-en",
+    "targetAudience": "learning-developers"
+  }
+}
