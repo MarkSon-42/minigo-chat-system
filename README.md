@@ -6,6 +6,8 @@
 
 A real-time chat system built to learn Go concurrency patterns, WebSocket protocol, and proxy architectures. This is a hands-on project for understanding how to build scalable messaging systems.
 
+> **Note**: This learning project is now complete (January 2026). The core chat system (Backend + Proxy + Frontend) is fully functional. Voice server (WebRTC) remains incomplete.
+
 **[Explore the docs »](https://deepwiki.com/MarkSon-42/minigo-chat-system)**
 
 <!-- TABLE OF CONTENTS -->
@@ -85,6 +87,22 @@ Each service runs independently and communicates via WebSocket.
    cd ../proxy && go mod download
    ```
 
+### Quick Start
+
+**Start the servers:**
+```sh
+# Terminal 1
+./start_backend.sh
+
+# Terminal 2
+./start_proxy.sh
+
+# Open the chat UI
+open frontend/index.html
+```
+
+Enter a username and room name, then click "입장하기" to start chatting. Open multiple browser windows to test multi-user chat.
+
 ### Running the System
 
 You need 2 terminals:
@@ -163,16 +181,22 @@ cd proxy && go test -v -race ./...
 cd backend && go test -v -race ./...
 ```
 
-## Roadmap
+## Features
 
+### Completed
 - [x] Backend WebSocket server with hub pattern
 - [x] Proxy layer with filtering and logging
 - [x] Web frontend for chat
 - [x] CI/CD with GitHub Actions
-- [ ] Voice server completion (WebRTC SFU)
+- [x] Real-time message broadcasting
+- [x] Keyword-based message filtering
+- [x] JSON Lines message logging
+
+### Incomplete
+- [ ] Voice server (WebRTC SFU) - basic structure only
 - [ ] Admin dashboard UI
-- [ ] Rate limiting implementation
-- [ ] Message history/persistence
+- [ ] Rate limiting
+- [ ] Message persistence/history
 - [ ] User authentication
 
 ## Project Structure
